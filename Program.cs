@@ -16,7 +16,7 @@ namespace Program
                 switch (opcao)
                 {
                     case 1:
-                        Usuario user = CreateUser();
+                        Usuario user = CreateUser(users);
                         users.Add(user);
                         break;
                     case 2:
@@ -32,6 +32,7 @@ namespace Program
                         ShowTotalBullet(users);
                         break;
                     case 6:
+                        System.Console.Write("Informe seu CPF: ");
                         ManipulateAccount(users);
                         break;
                     default: break;
@@ -43,13 +44,126 @@ namespace Program
 
         private static void ManipulateAccount(List<Usuario> users)
         {
-            System.Console.Write("Informe o CPF da conta que deseja manipular: ");
             string cpf = Console.ReadLine();
-
-            if (users.Exists(user => user.Cpf == cpf))
+            Usuario currentUser = new Usuario();
+            do
             {
-                System.Console.WriteLine("deu certo");
+                if (!users.Exists(user => user.Cpf == cpf))
+                {
+                    System.Console.WriteLine("Por favor, informe um CPF válido");
+                    System.Console.WriteLine("[1] - Login");
+                    System.Console.WriteLine("[2] - Cadastro");
+                    System.Console.Write("Informe a opção desejada: ");
+                    int newOption = int.Parse(Console.ReadLine());
+                    switch (newOption)
+                    {
+                        case 1:
+                            if (!ExistAnyAccount(users))
+                            {
+                                break;
+                            }
+                            System.Console.Write("Informe seu CPF: ");
+                            cpf = Console.ReadLine();
+                            if (users.Exists(user => user.Cpf == cpf))
+                            {
+                                System.Console.Write("Informe sua senha: ");
+                                string password = Console.ReadLine();
+                                if (users.Exists(user => user.Password == password))
+                                {
+                                    currentUser = users.FirstOrDefault(user => user.Cpf == cpf);
+                                }
+                                else
+                                {
+                                    System.Console.WriteLine("Senha incorreta, retornando ao menu");
+                                }
+                            }
+                            break;
+
+                        case 2:
+                            Usuario user = CreateUser(users);
+                            users.Add(user);
+                            break;
+
+                        default: System.Console.WriteLine("Opção inválida"); break;
+                    }
+                }
+
+                ManipulateMenu();
+                int option = int.Parse(Console.ReadLine());
+                switch (option)
+                {
+                    case 1:
+                        ToDeposite(currentUser);
+                        break;
+
+                    case 2:
+                        Sacar(currentUser);
+                        break;
+
+                    case 3:
+                        Transferir(currentUser, users);
+                        break;
+
+                    default: System.Console.WriteLine("Opção não encontrada"); break;
+                }
+                if (option == 0) break;
+            } while (users.Exists(user => user.Cpf == cpf));
+            System.Console.WriteLine("Retornando ao menu principal...");
+        }
+
+        private static void Transferir(Usuario currentUser, List<Usuario> users)
+        {
+            System.Console.Write("Informe o CPF do destinatário: ");
+            string cpfDestinatario = Console.ReadLine();
+            if (!users.Exists(user => user.Cpf == cpfDestinatario))
+            {
+                System.Console.WriteLine("Conta não encontrada");
+                return;
             }
+            Usuario userDestinatario = users.FirstOrDefault(user => user.Cpf == cpfDestinatario);
+
+            System.Console.Write("Informe a quantia que deseja transferir: ");
+            double value = double.Parse(Console.ReadLine());
+            if (value > currentUser.Saldo)
+            {
+                System.Console.WriteLine("Não é possível transferir valor maior do que você possuí!");
+                return;
+            }
+            userDestinatario.Saldo += value;
+            currentUser.Saldo -= value;
+        }
+
+        private static void Sacar(Usuario currentUser)
+        {
+            System.Console.Write("Informe o valor que deseja sacar: ");
+            double saque = double.Parse(Console.ReadLine());
+            if (saque > currentUser.Saldo)
+            {
+                System.Console.WriteLine("Não é possível sacar um valor maior que seu saldo");
+                return;
+            }
+            currentUser.Saldo -= saque;
+        }
+
+        private static void ToDeposite(Usuario currentUser)
+        {
+            System.Console.Write("Informe o valor a ser depositado: ");
+            double newSaldo = double.Parse(Console.ReadLine());
+            if (newSaldo > 0)
+            {
+                currentUser.Saldo += newSaldo;
+                return;
+            }
+            System.Console.WriteLine("Não é possivel depositar o valor 0 ou negativo");
+        }
+
+        private static void ManipulateMenu()
+        {
+            System.Console.WriteLine("[1] - Depositar");
+            System.Console.WriteLine("[2] - Sacar");
+            System.Console.WriteLine("[3] - Transferência");
+            System.Console.WriteLine("[0] - Retornar ao menu principal");
+            System.Console.Write("Informe a opção desejada: ");
         }
 
         private static void ShowTotalBullet(List<Usuario> users)
@@ -60,6 +174,10 @@ namespace Program
 
         private static void ShowDetailsAccount(List<Usuario> users)
         {
+            if (!ExistAnyAccount(users))
+            {
+                return;
+            }
             System.Console.Write("Informe o CPF do usuário que deseja visualizar: ");
             string cpf = Console.ReadLine();
             Usuario user = users.FirstOrDefault(user => user.Cpf == cpf);
@@ -72,6 +190,10 @@ namespace Program
 
         private static void DeleteUser(List<Usuario> users)
         {
+            if (!ExistAnyAccount(users))
+            {
+                return;
+            }
             System.Console.Write("Informe o CPF do usuário a ser removido: ");
             string cpf = Console.ReadLine();
 
@@ -81,6 +203,10 @@ namespace Program
 
         private static void ListUsers(List<Usuario> users)
         {
+            if (users.Count == 0)
+            {
+                System.Console.WriteLine("Não existe contas criadas ainda!");
+            }
             foreach (var user in users)
             {
                 System.Console.WriteLine("---");
@@ -91,18 +217,56 @@ namespace Program
             }
         }
 
-        private static Usuario CreateUser()
+        private static Usuario CreateUser(List<Usuario> users)
         {
-            System.Console.Write("Informe seu nome: ");
-            string nome = Console.ReadLine();
-            System.Console.Write("Informe seu cpf: ");
-            string cpf = Console.ReadLine();
-            System.Console.Write("Informe sua senha: ");
-            string password = Console.ReadLine();
-            System.Console.Write("Informe o saldo da conta: ");
-            double saldo = double.Parse(Console.ReadLine());
+            bool flag = false;
+            string nome;
+            string cpf;
+            string password;
+            double saldo;
+            do
+            {
+                System.Console.Write("Informe seu nome: ");
+                nome = Console.ReadLine();
+                System.Console.Write("Informe seu cpf: ");
+                cpf = Console.ReadLine();
+                if (users.Exists(user => user.Cpf == cpf))
+                {
+                    System.Console.WriteLine("Este CPF já está cadastrado, reiniciando cadastro");
+                    return CreateUser(users);
+                    break;
+                }
+                System.Console.Write("Informe sua senha: ");
+                password = HidePassword();
+                System.Console.Write("Informe o saldo da conta: ");
+                saldo = double.Parse(Console.ReadLine());
+                flag = true;
+
+
+
+            } while (flag == false);
 
             return new Usuario(nome, cpf, password, saldo);
+        }
+
+        private static string HidePassword()
+        {
+            string password = "";
+            while (true)
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    break;
+                }
+                else
+                {
+                    password += key.KeyChar;
+                    Console.Write("*");
+                }
+            }
+            Console.Write("\n");
+            return password;
         }
 
         private static void ShowMenu()
@@ -116,6 +280,16 @@ namespace Program
             System.Console.WriteLine("[6] - Manipular conta");
             System.Console.WriteLine("[0] - Sair");
             System.Console.Write("Escolha a opção desejada: ");
+        }
+
+        private static bool ExistAnyAccount(List<Usuario> users)
+        {
+            if (users.Count == 0)
+            {
+                System.Console.WriteLine("Não existe contas criadas ainda!");
+                return false;
+            }
+            return true;
         }
     }
 }

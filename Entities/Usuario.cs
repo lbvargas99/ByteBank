@@ -12,6 +12,10 @@ namespace ByteBank.Entities
         public string Password { get; set; }
         public double Saldo { get; set; }
 
+        public Usuario()
+        {
+
+        }
         public Usuario(string nome, string cpf, string password, double saldo)
         {
             Nome = nome;
