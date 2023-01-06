@@ -6,16 +6,18 @@ namespace Program
     {
         public static void Main(string[] args)
         {
+            Console.Clear();
             List<Usuario> users = new List<Usuario>();
             int opcao;
             do
             {
                 ShowMenu();
                 opcao = int.Parse(Console.ReadLine());
-
+                SleepToRedirect();
                 switch (opcao)
                 {
                     case 1:
+                        Console.Clear();
                         Usuario user = CreateUser(users);
                         users.Add(user);
                         break;
@@ -42,6 +44,13 @@ namespace Program
 
         }
 
+        private static void SleepToRedirect()
+        {
+            System.Console.WriteLine("Redirecionando...");
+            Thread.Sleep(2000);
+            Console.Clear();
+        }
+
         private static void ManipulateAccount(List<Usuario> users)
         {
             string cpf = Console.ReadLine();
@@ -60,7 +69,7 @@ namespace Program
                         case 1:
                             if (!ExistAnyAccount(users))
                             {
-                                break;
+                                return;
                             }
                             System.Console.Write("Informe seu CPF: ");
                             cpf = Console.ReadLine();
@@ -88,16 +97,17 @@ namespace Program
                     }
                 }
 
+                currentUser = users.FirstOrDefault(user => user.Cpf == cpf);
                 ManipulateMenu();
                 int option = int.Parse(Console.ReadLine());
                 switch (option)
                 {
                     case 1:
-                        ToDeposite(currentUser);
+                        ToDeposite(currentUser, users);
                         break;
 
                     case 2:
-                        Sacar(currentUser);
+                        Sacar(currentUser, users);
                         break;
 
                     case 3:
@@ -131,9 +141,14 @@ namespace Program
             }
             userDestinatario.Saldo += value;
             currentUser.Saldo -= value;
+
+            users.Remove(userDestinatario);
+            users.Remove(currentUser);
+            users.Add(userDestinatario);
+            users.Add(currentUser);
         }
 
-        private static void Sacar(Usuario currentUser)
+        private static void Sacar(Usuario currentUser, List<Usuario> users)
         {
             System.Console.Write("Informe o valor que deseja sacar: ");
             double saque = double.Parse(Console.ReadLine());
@@ -143,15 +158,19 @@ namespace Program
                 return;
             }
             currentUser.Saldo -= saque;
+            users.Remove(currentUser);
+            users.Add(currentUser);
         }
 
-        private static void ToDeposite(Usuario currentUser)
+        private static void ToDeposite(Usuario currentUser, List<Usuario> users)
         {
             System.Console.Write("Informe o valor a ser depositado: ");
             double newSaldo = double.Parse(Console.ReadLine());
             if (newSaldo > 0)
             {
                 currentUser.Saldo += newSaldo;
+                users.Remove(currentUser);
+                users.Add(currentUser);
                 return;
             }
             System.Console.WriteLine("Não é possivel depositar o valor 0 ou negativo");
@@ -176,6 +195,7 @@ namespace Program
         {
             if (!ExistAnyAccount(users))
             {
+                SleepToRedirect();
                 return;
             }
             System.Console.Write("Informe o CPF do usuário que deseja visualizar: ");
@@ -192,10 +212,13 @@ namespace Program
         {
             if (!ExistAnyAccount(users))
             {
+                SleepToRedirect();
                 return;
             }
             System.Console.Write("Informe o CPF do usuário a ser removido: ");
             string cpf = Console.ReadLine();
+            Thread.Sleep(500);
+            System.Console.WriteLine("Conta removida");
 
             Usuario contaRemover = users.FirstOrDefault(user => user.Cpf == cpf);
             users.Remove(contaRemover);
@@ -203,9 +226,14 @@ namespace Program
 
         private static void ListUsers(List<Usuario> users)
         {
+            SleepToRedirect();
+            System.Console.WriteLine(":: Lista de contas");
             if (users.Count == 0)
             {
                 System.Console.WriteLine("Não existe contas criadas ainda!");
+                System.Console.WriteLine("Redirecionando...");
+                Thread.Sleep(2000);
+                return;
             }
             foreach (var user in users)
             {
@@ -215,10 +243,13 @@ namespace Program
                 System.Console.WriteLine($"Saldo: {user.Saldo}");
                 System.Console.WriteLine("---");
             }
+            System.Console.WriteLine("Redirecionando...");
+            Thread.Sleep(5000);
         }
 
         private static Usuario CreateUser(List<Usuario> users)
         {
+            System.Console.WriteLine(":: Cadastro de conta");
             bool flag = false;
             string nome;
             string cpf;
@@ -241,11 +272,9 @@ namespace Program
                 System.Console.Write("Informe o saldo da conta: ");
                 saldo = double.Parse(Console.ReadLine());
                 flag = true;
-
-
-
             } while (flag == false);
 
+            SleepToRedirect();
             return new Usuario(nome, cpf, password, saldo);
         }
 
@@ -286,9 +315,11 @@ namespace Program
         {
             if (users.Count == 0)
             {
+                SleepToRedirect();
                 System.Console.WriteLine("Não existe contas criadas ainda!");
                 return false;
             }
+            SleepToRedirect();
             return true;
         }
     }
