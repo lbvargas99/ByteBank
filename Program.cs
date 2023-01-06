@@ -13,7 +13,6 @@ namespace Program
             {
                 ShowMenu();
                 opcao = int.Parse(Console.ReadLine());
-                SleepToRedirect();
                 switch (opcao)
                 {
                     case 1:
@@ -34,6 +33,7 @@ namespace Program
                         ShowTotalBullet(users);
                         break;
                     case 6:
+                        SleepToRedirect();
                         System.Console.Write("Informe seu CPF: ");
                         ManipulateAccount(users);
                         break;
@@ -47,7 +47,7 @@ namespace Program
         private static void SleepToRedirect()
         {
             System.Console.WriteLine("Redirecionando...");
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             Console.Clear();
         }
 
@@ -83,7 +83,7 @@ namespace Program
                                 }
                                 else
                                 {
-                                    System.Console.WriteLine("Senha incorreta, retornando ao menu");
+                                    System.Console.WriteLine("Senha incorreta, retornando ao menu principal");
                                 }
                             }
                             break;
@@ -104,21 +104,28 @@ namespace Program
                 {
                     case 1:
                         ToDeposite(currentUser, users);
+                        SleepToRedirect();
                         break;
 
                     case 2:
                         Sacar(currentUser, users);
+                        SleepToRedirect();
                         break;
 
                     case 3:
                         Transferir(currentUser, users);
+                        SleepToRedirect();
                         break;
 
-                    default: System.Console.WriteLine("Opção não encontrada"); break;
+                    default:
+                        System.Console.WriteLine("Opção não encontrada");
+                        SleepToRedirect();
+                        break;
                 }
                 if (option == 0) break;
             } while (users.Exists(user => user.Cpf == cpf));
             System.Console.WriteLine("Retornando ao menu principal...");
+            SleepToRedirect();
         }
 
         private static void Transferir(Usuario currentUser, List<Usuario> users)
@@ -178,6 +185,7 @@ namespace Program
 
         private static void ManipulateMenu()
         {
+
             System.Console.WriteLine("[1] - Depositar");
             System.Console.WriteLine("[2] - Sacar");
             System.Console.WriteLine("[3] - Transferência");
@@ -189,13 +197,14 @@ namespace Program
         {
             System.Console.WriteLine("Saldo total armazenado no banco:");
             System.Console.WriteLine($"R$: {users.Sum(bullet => bullet.Saldo)}");
+            System.Console.WriteLine("Redirecionando...");
+            Thread.Sleep(3000);
         }
 
         private static void ShowDetailsAccount(List<Usuario> users)
         {
             if (!ExistAnyAccount(users))
             {
-                SleepToRedirect();
                 return;
             }
             System.Console.Write("Informe o CPF do usuário que deseja visualizar: ");
@@ -206,13 +215,16 @@ namespace Program
             System.Console.WriteLine($"Nome:   {user.Nome}");
             System.Console.WriteLine($"CPF:    {user.Cpf}");
             System.Console.WriteLine($"Saldo:  {user.Saldo}");
+            System.Console.WriteLine("Redirecionando...");
+            Thread.Sleep(3000);
         }
 
         private static void DeleteUser(List<Usuario> users)
         {
+            SleepToRedirect();
+            System.Console.WriteLine(":: Deletar usuário");
             if (!ExistAnyAccount(users))
             {
-                SleepToRedirect();
                 return;
             }
             System.Console.Write("Informe o CPF do usuário a ser removido: ");
@@ -228,11 +240,8 @@ namespace Program
         {
             SleepToRedirect();
             System.Console.WriteLine(":: Lista de contas");
-            if (users.Count == 0)
+            if (!ExistAnyAccount(users))
             {
-                System.Console.WriteLine("Não existe contas criadas ainda!");
-                System.Console.WriteLine("Redirecionando...");
-                Thread.Sleep(2000);
                 return;
             }
             foreach (var user in users)
@@ -249,6 +258,7 @@ namespace Program
 
         private static Usuario CreateUser(List<Usuario> users)
         {
+            SleepToRedirect();
             System.Console.WriteLine(":: Cadastro de conta");
             bool flag = false;
             string nome;
@@ -316,7 +326,7 @@ namespace Program
             if (users.Count == 0)
             {
                 SleepToRedirect();
-                System.Console.WriteLine("Não existe contas criadas ainda!");
+                System.Console.WriteLine("Não existe conta registrada!");
                 return false;
             }
             SleepToRedirect();
