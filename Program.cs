@@ -57,6 +57,17 @@ namespace Program
             Usuario currentUser = new Usuario();
             do
             {
+                if (users.Exists(user => user.Cpf == cpf))
+                {
+                    Usuario tempUser = users.FirstOrDefault(user => user.Cpf == cpf);
+                    System.Console.Write("Informe sua senha: ");
+                    string password = HidePassword();
+                    if (tempUser.Password != password)
+                    {
+                        System.Console.WriteLine("Senha informada é inválida");
+                        break;
+                    }
+                }
                 if (!users.Exists(user => user.Cpf == cpf))
                 {
                     System.Console.WriteLine("Por favor, informe um CPF válido");
@@ -115,6 +126,10 @@ namespace Program
                     case 3:
                         Transferir(currentUser, users);
                         SleepToRedirect();
+                        break;
+
+                    case 0:
+                        System.Console.WriteLine("Saindo...");
                         break;
 
                     default:
